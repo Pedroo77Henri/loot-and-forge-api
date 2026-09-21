@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from database import SessionLocal
-from models import Item, Status, Raridade, TipoItem
+from models import Item, Status, Rarity, ItemType
 from pydantic import BaseModel
 
 router = APIRouter()
@@ -14,26 +14,25 @@ def get_db():
         db.close()
 
 
-class Itens(BaseModel):
-    nome: str
-    tipo: TipoItem
-    raridade: Raridade
-    poder: int
+class CreateItemSchema(BaseModel):
+    name: str
+    item_type: ItemType
+    rarity: Rarity
+    power: int
 
 @router.post("/itens")
-def criar_item(info: Itens, db: Session = Depends(get_db)):
-    nome_info = info.nome
-    tipo_info = info.tipo
-    raridade_info = info.raridade
-    poder_info = info.poder
+def create_item(info: CreateItemSchema, db: Session = Depends(get_db)):
+    name_info = info.name
+    item_type_info = info.item_type
+    rarity_info = info.rarity
+    power_info = info.power
 
     new_item = Item(
-        nome = nome_info,
-        tipo = tipo_info,
-        raridade = raridade_info,
-        poder = poder_info,
-        status = Status.PRONTO
-
+        name=name_info,
+        item_type=item_type_info,
+        rarity=rarity_info,
+        power=power_info,
+        status=Status.READY
     )
 
     try:
@@ -41,73 +40,88 @@ def criar_item(info: Itens, db: Session = Depends(get_db)):
         db.commit()
         db.refresh(new_item)
         return {
-            "Mensagem": "Item criado",
-            "nome": nome_info,
-            "tipo": tipo_info,
-            "raridade": raridade_info,
-            "poder": poder_info,
-            "status": Status.PRONTO
+            "message": "Item created",
+            "name": name_info,
+            "item_type": item_type_info,
+            "rarity": rarity_info,
+            "power": power_info,
+            "status": Status.READY
         }
     except Exception:
         db.rollback()
-        raise HTTPException(status_code=400, detail="Errao ao salvar no banco por dado errado")
+        raise HTTPException(status_code=400, detail="Error saving item to database")
 
 
-
-
-class Info(BaseModel):
-    nome: str
-    tempo_necessario: int
+class ForgeItemSchema(BaseModel):
+    name: str
+    time_required: int
 
 @router.post("/itens/forjar")
-def info_itens(informacao: Info, db: Session = Depends(get_db)):
-    entrada_nome = informacao.nome
-    entrada_tempo = informacao.tempo_necessario
+def forge_item(informacao: ForgeItemSchema, db: Session = Depends(get_db)):
+    input_name = informacao.name
+    input_time = informacao.time_required
 
-    novo_item = Item(
-        nome = entrada_nome,
-        tempo_necessario = entrada_tempo,
-        status = Status.FORJANDO,
-        tipo = TipoItem.ARMA,
-        raridade = Raridade.COMUM,
-        poder = 10
+    new_item = Item(
+        name=input_name,
+        time_required=input_time,
+        status=Status.FORGING,
+        item_type=ItemType.WEAPON,
+        rarity=Rarity.COMMON,
+        power=10
     )
 
     try:
-        db.add(novo_item)
+        db.add(new_item)
         db.commit()
-        db.refresh(novo_item)
-
+        db.refresh(new_item)
         return {
-            "mensagem": "Item colocado na forja com sucesso",
+            "message": "Item placed in forge successfully",
             "item": {
-                "id": novo_item.id,
-                "nome": novo_item.nome,
-                "status": novo_item.status.value,
-                "criado_em": novo_item.criado_em
-
+                "id": new_item.id,
+                "name": new_item.name,
+                "status": new_item.status.value,
+                "created_at": new_item.created_at
             }
         }
     except Exception:
         db.rollback()
-        raise HTTPException (status_code=500, detail="Erro ao salvar item")
+        raise HTTPException(status_code=500, detail="Error saving item to forge")
 
 
-@router.get("/itens/{search_id}")
-def search_item(search_id: int, db: Session = Depends(get_db)):
-    search = db.query(Item).filter(Item.id == search_id).first()
-    if search is None:
-        raise HTTPException(status_code=404, detail="ID não encontrado.")
-    return search
+@router.get("/itens/{item_id}")
+def get_item(item_id: int, db: Session = Depends(get_db)):
+    item = db.query(Item).filter(Item.id == item_id).first()
+    if item is None:
+        raise HTTPException(status_code=404, detail="Item not found")
+    return item
 
-@router.delete("/itens/{delete_id}")
-def delete_item(delete_id: int, db: Session = Depends(get_db)):
-    delete = db.query(Item).filter(Item.id == delete_id). first()
-    if delete is None:
-        raise HTTPException(status_code=404, detail="Não foi possível deletar pois o ID não foi encontrado")
+@router.get("/itens")
+def get_itens(item_type: str = None, item_rarity: str = None, order_by: str = None, direction: str = None, db: Session = Depends(get_db)): 
+    query = db.query(Item)
+    if item_type:
+        query = query.filter(Item.item_type == item_type)
+    if item_rarity:
+        query = query.filter(Item.rarity == item_rarity)
+    if order_by:
+        if order_by == "power":
+            column = Item.power
+        elif order_by == "created_at":
+            column = Item.created_at                
+        if direction == "desc":
+                query = query.order_by(column.desc())
+        else:
+            query = query.order_by(column.asc())
+    return query.all()
+
+
+@router.delete("/itens/{item_id}")
+def delete_item(item_id: int, db: Session = Depends(get_db)):
+    item = db.query(Item).filter(Item.id == item_id).first()
+    if item is None:
+        raise HTTPException(status_code=404, detail="Item not found")
     try:
-        db.delete(delete)
+        db.delete(item)
         db.commit()
-        return {"Item": f"{delete.nome} removido"}
+        return {"message": f"Item '{item.name}' removed successfully"}
     except Exception:
-        raise HTTPException(status_code=500, detail="Não foi possível remover o item")
+        raise HTTPException(status_code=500, detail="Error removing item")

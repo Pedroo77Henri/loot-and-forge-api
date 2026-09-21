@@ -4,29 +4,29 @@ from sqlalchemy import Column, Integer, String, DateTime, Enum as SAEnum
 from sqlalchemy.sql import func
 
 
-class TipoItem(Enum):
-    ARMA = auto()
-    ARMADURA = auto()
-    POCAO = auto()
-    ACESSORIO = auto()
+class ItemType(Enum):
+    WEAPON = "Weapon"
+    ARMOR = "Armor"
+    POTION = "Potion"
+    SCROLL = "Scroll"
 
-class Raridade(Enum):
-    COMUM = "Comum"
-    RARO = "Raro"
-    EPICO = "Épico"
-    LENDARIO = "Lendário"
+class Rarity(Enum):
+    COMMON = "Common"
+    RARE = "Rare"
+    EPIC = "Epic"
+    LEGENDARY = "Legendary"
 
 class Status(Enum):
-    PRONTO = 'Pronto'
-    FORJANDO = 'Forjando'
+    READY = "Ready"
+    FORGING = "Forging"
 
 class Item(Base):
-    __tablename__ = "Itens"
+    __tablename__ = "items"
     id = Column(Integer, primary_key=True)
-    nome = Column(String)
-    tipo = Column(SAEnum(TipoItem), nullable=False)
-    raridade = Column(SAEnum(Raridade), nullable=False)
-    poder = Column(Integer)
+    name = Column(String)
+    item_type = Column(SAEnum(ItemType), nullable=False)
+    rarity = Column(SAEnum(Rarity), nullable=False)
+    power = Column(Integer)
     status = Column(SAEnum(Status), nullable=False)
-    criado_em = Column(DateTime, server_default=func.now())
-    tempo_necessario = Column(Integer)
+    created_at = Column(DateTime, server_default=func.now())
+    time_required = Column(Integer)
