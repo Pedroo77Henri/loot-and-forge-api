@@ -55,8 +55,10 @@ def create_item(info: CreateItemSchema, db: Session = Depends(get_db)):
 class ForgeItemSchema(BaseModel):
     name: str
     time_required: int
+    item_type: ItemType
+    rarity: Rarity
 
-@router.post("/itens/forjar")
+@router.post("/itens/forjar", status_code=202)
 def forge_item(informacao: ForgeItemSchema, db: Session = Depends(get_db)):
     input_name = informacao.name
     input_time = informacao.time_required
@@ -65,9 +67,9 @@ def forge_item(informacao: ForgeItemSchema, db: Session = Depends(get_db)):
         name=input_name,
         time_required=input_time,
         status=Status.FORGING,
-        item_type=ItemType.WEAPON,
-        rarity=Rarity.COMMON,
-        power=10
+        item_type=ItemType,
+        rarity=Rarity,
+        power=None
     )
 
     try:
@@ -111,7 +113,10 @@ def get_itens(item_type: str = None, item_rarity: str = None, order_by: str = No
                 query = query.order_by(column.desc())
         else:
             query = query.order_by(column.asc())
-    return query.all()
+    results = query.all()
+    if not results:
+        raise HTTPException(status_code=404, detail="No items found")
+    return results
 
 
 @router.delete("/itens/{item_id}")
