@@ -62,13 +62,15 @@ class ForgeItemSchema(BaseModel):
 def forge_item(informacao: ForgeItemSchema, db: Session = Depends(get_db)):
     input_name = informacao.name
     input_time = informacao.time_required
+    input_item = informacao.item_type
+    input_rarity = informacao.rarity
 
     new_item = Item(
         name=input_name,
         time_required=input_time,
         status=Status.FORGING,
-        item_type=ItemType,
-        rarity=Rarity,
+        item_type=input_item,
+        rarity=input_rarity,
         power=None
     )
 
@@ -85,9 +87,9 @@ def forge_item(informacao: ForgeItemSchema, db: Session = Depends(get_db)):
                 "created_at": new_item.created_at
             }
         }
-    except Exception:
+    except Exception as e:
         db.rollback()
-        raise HTTPException(status_code=500, detail="Error saving item to forge")
+        raise HTTPException(status_code=500, detail=str(e))
 
 
 @router.get("/itens/{item_id}")
