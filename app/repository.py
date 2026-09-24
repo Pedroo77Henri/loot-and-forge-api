@@ -1,22 +1,35 @@
 from models import Item
 from sqlalchemy.orm import Session
+from fastapi import HTTPException
 
 def forge_item(db: Session, item: Item):
-    db.add(item)
-    db.commit()
-    db.refresh(item)
-    return item
-
+    try:
+        db.add(item)
+        db.commit()
+        db.refresh(item)
+        return item
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(status_code=500, detail="Error forging item")
+    
 def create_item(db: Session, item: Item):
-    db.add(item)
-    db.commit()
-    db.refresh(item)
-    return item
+    try:
+        db.add(item)
+        db.commit()
+        db.refresh(item)
+        return item
+    except Exception:
+        db.rollback()
+        raise HTTPException(status_code=400, detail="Error saving item to database")
 
 def delete_item(db: Session, item: Item):
-    db.delete(item)
-    db.commit()
-    return item
+    try:
+        db.delete(item)
+        db.commit()
+        return item
+    except Exception:
+        db.rollback()
+        raise HTTPException(status_code=500, detail="Error removing item")
 
 def get_all_items(db: Session, item_type: str = None, item_rarity: str = None, order_by: str = None, direction: str = None):
     query = db.query(Item)
@@ -34,6 +47,8 @@ def get_all_items(db: Session, item_type: str = None, item_rarity: str = None, o
         else:
             query = query.order_by(column.asc())
     results = query.all()
+    if not results:
+        raise HTTPException(status_code=404, detail="No items found")    
     return results
 
 def get_item_by_id(db: Session, item_id: int):

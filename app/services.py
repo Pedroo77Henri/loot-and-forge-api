@@ -1,5 +1,6 @@
 from models import Item, Status
 import repository
+from fastapi import HTTPException
 
 def create_item(db, payload):
     new_item = Item(
@@ -28,5 +29,8 @@ def get_all_items(db, item_type=None, item_rarity=None, order_by=None, direction
 def get_item_by_id(db, item_id: int):
     return repository.get_item_by_id(db, item_id)
 
-def delete_item(db, payload):
-    return repository.delete_item(db, payload)
+def delete_item(db, item_id: int):
+    item = repository.get_item_by_id(db, item_id) 
+    if item is None:
+        raise HTTPException(status_code=404, detail="Item not found")
+    return repository.delete_item(db, item) 
