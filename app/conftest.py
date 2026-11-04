@@ -1,6 +1,7 @@
 from database import Base
 from routes import get_db
 from main import app
+import pytest
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from fastapi.testclient import TestClient
@@ -19,3 +20,7 @@ def get_db_teste():
         db.close()
 
 app.dependency_overrides[get_db] = get_db_teste 
+
+@pytest.fixture
+def client():
+    return TestClient(app)
