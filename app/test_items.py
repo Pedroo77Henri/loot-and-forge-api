@@ -49,3 +49,18 @@ def test_deleate_item(client):
     response = client.delete(f"/itens/{item_criado['id']}")
 
     assert response.status_code == 200
+
+def test_listar_itens(client):
+    payload = {
+        "name": "Espada Longa",
+        "item_type": "Weapon",
+        "rarity": "Common",
+        "power": 50
+    }
+    item_criado = client.post("/itens", json=payload).json()
+
+    response = client.get("/itens")
+
+    assert response.status_code == 200
+    ids_retornados = [item["id"] for item in response.json()]
+    assert item_criado["id"] in ids_retornados
