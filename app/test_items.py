@@ -64,3 +64,18 @@ def test_listar_itens(client):
     assert response.status_code == 200
     ids_retornados = [item["id"] for item in response.json()]
     assert item_criado["id"] in ids_retornados
+
+def test_filtrar_por_tipo(client):
+    payload = {
+        "name": "Escudo de Ferro",
+        "item_type": "Armor",
+        "rarity": "Common",
+        "power": 30
+    }
+    client.post("/itens", json=payload)
+
+    response = client.get("/itens", params={"item_type": "ARMOR"})
+
+    assert response.status_code == 200
+    for item in response.json():
+        assert item["item_type"] == "Armor"
