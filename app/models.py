@@ -1,24 +1,8 @@
-from enum import Enum, auto
 from database import Base
+from domain.enums import ItemType, Rarity, Status
 from sqlalchemy import Column, Integer, String, DateTime, Enum as SAEnum
 from sqlalchemy.sql import func
 
-
-class ItemType(Enum):
-    WEAPON = "Weapon"
-    ARMOR = "Armor"
-    POTION = "Potion"
-    SCROLL = "Scroll"
-
-class Rarity(Enum):
-    COMMON = "Common"
-    RARE = "Rare"
-    EPIC = "Epic"
-    LEGENDARY = "Legendary"
-
-class Status(Enum):
-    READY = "Ready"
-    FORGING = "Forging"
 
 class Item(Base):
     __tablename__ = "items"
