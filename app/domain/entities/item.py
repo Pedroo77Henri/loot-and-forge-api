@@ -13,3 +13,7 @@ class Item:
     time_required: int | None = None
     id: int | None = None
     created_at: datetime | None = None
+
+    def finish_forging(self, power: int):
+        self.power = power
+        self.status = Status.READY
