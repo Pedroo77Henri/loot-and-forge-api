@@ -74,8 +74,19 @@ def test_filtrar_por_tipo(client):
     }
     client.post("/itens", json=payload)
 
-    response = client.get("/itens", params={"item_type": "ARMOR"})
+    response = client.get("/itens", params={"item_type": "Armor"})
 
     assert response.status_code == 200
     for item in response.json():
         assert item["item_type"] == "Armor"
+
+def test_buscar_item_inexistente_devolve_404(client):
+    response = client.get("/itens/999999")
+
+    assert response.status_code == 404
+
+
+def test_deletar_item_inexistente_devolve_404(client):
+    response = client.delete("/itens/999999")
+
+    assert response.status_code == 404

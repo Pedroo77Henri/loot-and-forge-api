@@ -1,5 +1,5 @@
 from database import Base
-from routes import get_db
+from dependencies import get_db
 from main import app
 import pytest
 from sqlalchemy import create_engine
