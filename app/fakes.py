@@ -17,8 +17,11 @@ class FakeItemRepository(ItemRepository):
     def get_by_id(self, item_id: int) -> Item | None:
         return self.items.get(item_id)
 
-    def list_all(self, item_type=None, rarity=None, order_by=None, direction=None) -> list[Item]:
-        return list(self.items.values())
+    def list_all(self, item_type=None, rarity=None, order_by=None, direction=None, status=None) -> list[Item]:
+        itens = list(self.items.values())
+        if status:
+            itens = [i for i in itens if i.status == status]
+        return itens
 
     def delete(self, item: Item) -> None:
         self.items.pop(item.id, None)

@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 from domain.entities.item import Item
-from domain.enums import ItemType, Rarity
+from domain.enums import ItemType, Rarity, Status
 
 
 class ItemRepository(ABC):
@@ -20,6 +20,7 @@ class ItemRepository(ABC):
         rarity: Rarity | None = None,
         order_by: str | None = None,
         direction: str | None = None,
+        status: Status | None = None,
     ) -> list[Item]:
         pass
 

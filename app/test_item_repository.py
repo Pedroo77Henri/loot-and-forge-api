@@ -69,3 +69,12 @@ def test_delete_remove_item(repo):
     repo.delete(item)
 
     assert repo.get_by_id(item.id) is None
+
+
+def test_list_all_filtra_por_status(repo):
+    repo.save(novo_item(name="Espada", status=Status.READY))
+    repo.save(novo_item(name="Machado", status=Status.FORGING, power=None))
+
+    resultado = repo.list_all(status=Status.FORGING)
+
+    assert [i.name for i in resultado] == ["Machado"]

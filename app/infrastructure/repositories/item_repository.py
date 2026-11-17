@@ -1,6 +1,6 @@
 from sqlalchemy.orm import Session
 from domain.entities.item import Item
-from domain.enums import ItemType, Rarity
+from domain.enums import ItemType, Rarity, Status
 from domain.repositories import ItemRepository
 from models import Item as ItemModel
 
@@ -58,12 +58,15 @@ class SqlAlchemyItemRepository(ItemRepository):
         rarity: Rarity | None = None,
         order_by: str | None = None,
         direction: str | None = None,
+        status: Status | None = None,
     ) -> list[Item]:
         query = self.db.query(ItemModel)
         if item_type:
             query = query.filter(ItemModel.item_type == item_type)
         if rarity:
             query = query.filter(ItemModel.rarity == rarity)
+        if status:
+            query = query.filter(ItemModel.status == status)
 
         columns = {"power": ItemModel.power, "created_at": ItemModel.created_at}
         column = columns.get(order_by)
