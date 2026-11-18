@@ -1,14 +1,23 @@
-from database import SessionLocal
-from models import Item, Status
 from time import sleep
-from random import randint
-db = SessionLocal()
-while True:
-    query = db.query(Item).filter(Item.status == Status.FORGING).all()
-    for item in query:
-        time = item.time_required
-        sleep(time)
-        item.power = randint(80, 100)
-        item.status = Status.READY
-        db.commit()
-    sleep(60)
+from database import SessionLocal
+from infrastructure.repositories.item_repository import SqlAlchemyItemRepository
+from use_cases.finish_forge import FinishForge
+
+
+def run_once():
+    db = SessionLocal()
+    try:
+        repository = SqlAlchemyItemRepository(db)
+        FinishForge(repository).execute()
+    finally:
+        db.close()
+
+
+def run():
+    while True:
+        run_once()
+        sleep(60)
+
+
+if __name__ == "__main__":
+    run()
