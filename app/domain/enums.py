@@ -16,3 +16,7 @@ class Rarity(Enum):
 class Status(Enum):
     READY = "Ready"
     FORGING = "Forging"
+
+class CharacterStatus(Enum):
+    ACTIVE = "Active"
+    INACTIVE = "Inactive"
