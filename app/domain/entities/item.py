@@ -14,6 +14,7 @@ class Item:
     time_required: int | None = None
     id: int | None = None
     created_at: datetime | None = None
+    character_id: int | None = None
 
     def is_forge_complete(self, now: datetime) -> bool:
         if self.status != Status.FORGING:
