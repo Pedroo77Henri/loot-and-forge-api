@@ -15,6 +15,7 @@ def _to_entity(model: ItemModel) -> Item:
         status=model.status,
         created_at=model.created_at,
         time_required=model.time_required,
+        character_id=model.character_id,
     )
 
 
@@ -25,6 +26,7 @@ def _copy_to_model(item: Item, model: ItemModel) -> None:
     model.power = item.power
     model.status = item.status
     model.time_required = item.time_required
+    model.character_id = item.character_id
 
 
 class SqlAlchemyItemRepository(ItemRepository):
@@ -59,6 +61,7 @@ class SqlAlchemyItemRepository(ItemRepository):
         order_by: str | None = None,
         direction: str | None = None,
         status: Status | None = None,
+        character_id: int | None = None,
     ) -> list[Item]:
         query = self.db.query(ItemModel)
         if item_type:
@@ -67,6 +70,8 @@ class SqlAlchemyItemRepository(ItemRepository):
             query = query.filter(ItemModel.rarity == rarity)
         if status:
             query = query.filter(ItemModel.status == status)
+        if character_id is not None:
+            query = query.filter(ItemModel.character_id == character_id)
 
         columns = {"power": ItemModel.power, "created_at": ItemModel.created_at}
         column = columns.get(order_by)
